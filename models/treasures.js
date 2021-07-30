@@ -1,6 +1,6 @@
 const db = require('../db');
 
-exports.fetchTreasures = (sortBy = 'age', sortOrder = 'asc') => {
+exports.fetchTreasures = (sortBy = 'age', sortOrder = 'asc', colour) => {
   if (!['age', 'cost_at_auction', 'treasure_name'].includes(sortBy)) {
     return Promise.reject({ status: 400, msg: 'Invalid sort by value' });
   }
@@ -17,6 +17,51 @@ exports.fetchTreasures = (sortBy = 'age', sortOrder = 'asc') => {
   const fullQuery = `${baseQuery} ${sortClause};`;
 
   return db.query(fullQuery).then((data) => {
+    if (colour) {
+      return data.rows.filter((row) => {
+        return row.colour === colour;
+      });
+    }
     return data.rows;
   });
+};
+
+exports.insertTreasure = (newTreasure) => {
+  const { age, colour, cost_at_auction, treasure_name, shop_id } = newTreasure;
+  return db
+    .query(
+      `
+  INSERT INTO treasures (age, colour, cost_at_auction, treasure_name, shop_id)
+  VALUES
+  ($1, $2, $3, $4, $5)
+  RETURNING *;
+  `,
+      [age, colour, cost_at_auction, treasure_name, shop_id],
+    )
+    .then((result) => {
+      return result.rows[0];
+    })
+    .catch((err) => {
+      return Promise.reject({
+        status: 400,
+        msg: 'Treasure not added, invalid data',
+      });
+    });
+};
+
+exports.updateTreasure = (treasureId, costAtAuction) => {
+  return db
+    .query(
+      `
+    UPDATE treasures 
+      SET 
+      cost_at_auction = $1
+      WHERE treasure_id = $2
+      RETURNING *;
+  `,
+      [costAtAuction, treasureId],
+    )
+    .then((result) => {
+      return result.rows[0];
+    });
 };

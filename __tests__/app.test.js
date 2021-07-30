@@ -76,4 +76,106 @@ describe('GET /api/treasures', () => {
         });
       });
   });
+
+  it('it returns 400 if provided an invalid sort by', () => {
+    return request(app)
+      .get('/api/treasures?sort_by=cabbage')
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe('Invalid sort by value');
+      });
+  });
+
+  it('it returns 400 if provided an invalid sort order', () => {
+    return request(app)
+      .get('/api/treasures?order=cabbage')
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe('Invalid sort order value');
+      });
+  });
+
+  it('it returns items of a given colour when provided the colour in a query, with a status 200', () => {
+    return request(app)
+      .get('/api/treasures?colour=gold')
+      .expect(200)
+      .then((res) => {
+        res.body.treasures.forEach((treasure) => {
+          expect(treasure).toEqual(
+            expect.objectContaining({
+              treasure_id: expect.any(Number),
+              treasure_name: expect.any(String),
+              age: expect.any(Number),
+              cost_at_auction: expect.any(Number),
+              shop_name: expect.any(String),
+              colour: 'gold',
+            }),
+          );
+        });
+      });
+  });
+});
+
+describe('POST /api/treasures', () => {
+  it('it returns a new treasure to the database', () => {
+    return request(app)
+      .post('/api/treasures')
+      .send({
+        treasure_name: 'ruby keyboard',
+        colour: 'ruby',
+        age: 5,
+        cost_at_auction: '1001.00',
+        shop_id: 1,
+      })
+      .expect(201)
+      .then((res) => {
+        expect(res.body.treasure).toEqual({
+          treasure_id: expect.any(Number),
+          treasure_name: 'ruby keyboard',
+          colour: 'ruby',
+          age: 5,
+          cost_at_auction: 1001.0,
+          shop_id: 1,
+        });
+      });
+  });
+
+  it('it returns error status when passed invalid data', () => {
+    return request(app)
+      .post('/api/treasures')
+      .send({
+        treasure_name: 'ruby keyboard',
+        colour: 5,
+        age: 'dog',
+        cost_at_auction: '1001.00',
+        shop_id: 'dog',
+      })
+      .expect(400)
+      .then((res) => {
+        expect(res.body).toEqual({
+          msg: 'Treasure not added, invalid data',
+        });
+      });
+  });
+});
+
+describe('PATCH /api/treasures/:treasure_id', () => {
+  it('it updates the cost of a given treasure', () => {
+    return request(app)
+      .patch('/api/treasures/2')
+      .send({
+        cost_at_auction: '4',
+      })
+      .expect(200)
+      .then((res) => {
+        expect(res.body.treasure).toEqual({
+          age: 100,
+          colour: 'azure',
+          cost_at_auction: 4,
+          treasure_id: 2,
+          treasure_name: 'treasure-d',
+          shop_id: 2,
+        });
+      });
+  });
 });
