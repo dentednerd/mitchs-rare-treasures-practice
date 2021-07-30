@@ -179,3 +179,28 @@ describe('PATCH /api/treasures/:treasure_id', () => {
       });
   });
 });
+
+describe('DELETE /api/treasures/:treasure_id', () => {
+  it('it deletes a given item from the database', () => {
+    return request(app).delete('/api/treasures/2').expect(200);
+  });
+});
+
+describe('GET /api/shops', () => {
+  it('it returns all shops with status 200', () => {
+    return request(app)
+      .get('/api/shops')
+      .expect(200)
+      .then(({ body }) => {
+        body.shops.forEach((shop) => {
+          expect(shop).toEqual(
+            expect.objectContaining({
+              shop_id: expect.any(Number),
+              shop_name: expect.any(String),
+              slogan: expect.any(String),
+            }),
+          );
+        });
+      });
+  });
+});

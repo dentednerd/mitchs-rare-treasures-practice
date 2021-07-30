@@ -2,6 +2,7 @@ const {
   fetchTreasures,
   insertTreasure,
   updateTreasure,
+  deleteTreasure,
 } = require('../models/treasures');
 
 const getTreasures = (req, res) => {
@@ -34,4 +35,11 @@ const editTreasure = (req, res) => {
   });
 };
 
-module.exports = { getTreasures, addTreasure, editTreasure };
+const removeTreasure = (req, res) => {
+  const { treasure_id } = req.params;
+  deleteTreasure(treasure_id).then((deletedTreasure) => {
+    res.status(200).send({ treasure: deletedTreasure });
+  });
+};
+
+module.exports = { getTreasures, addTreasure, editTreasure, removeTreasure };

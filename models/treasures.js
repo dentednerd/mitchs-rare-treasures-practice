@@ -65,3 +65,16 @@ exports.updateTreasure = (treasureId, costAtAuction) => {
       return result.rows[0];
     });
 };
+
+exports.deleteTreasure = (treasureId) => {
+  return db
+    .query(
+      `
+    DELETE FROM treasures WHERE treasure_id = $1 RETURNING *;
+  `,
+      [treasureId],
+    )
+    .then((result) => {
+      return result.rows[0];
+    });
+};
